@@ -5,10 +5,10 @@ export const APP_CONFIG = {
   defaultLocale: "en-IN",
   currency: "INR",
   blockchain: {
-    network: "polygon-amoy",
-    chainId: 80002,
-    explorerUrl: "https://amoy.polygonscan.com",
-    rpcUrl: "https://rpc-amoy.polygon.technology",
+    network: "base-sepolia",
+    chainId: 84532,
+    explorerUrl: "https://sepolia.basescan.org",
+    rpcUrl: "https://sepolia.base.org",
   },
   rbi: {
     defaultBankRate: 6.5,

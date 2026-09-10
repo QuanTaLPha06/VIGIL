@@ -1,15 +1,15 @@
 /**
  * DealLock blockchain integration.
- * Uses viem to interact with the DealLock contract on Polygon Amoy testnet.
+ * Uses viem to interact with the DealLock contract on Base Sepolia testnet.
  */
 
 import { createWalletClient, createPublicClient, custom, http, parseEther } from "viem";
-import { polygonAmoy } from "viem/chains";
+import { baseSepolia } from "viem/chains";
 
 // ABI — generated after `pnpm blockchain:compile`
 // Import from blockchain package once compiled:
 // import { DEALLOCK_ABI } from "@vigil/deallock-abi";
-// For now, a minimal inline ABI for the key functions:
+// Minimal inline ABI for the key functions:
 export const DEALLOCK_ABI = [
   {
     inputs: [
@@ -62,10 +62,10 @@ export const DEALLOCK_CONTRACT_ADDRESS =
 
 // Public client for read operations (no wallet needed)
 export const publicClient = createPublicClient({
-  chain: polygonAmoy,
+  chain: baseSepolia,
   transport: http(
-    process.env.NEXT_PUBLIC_AMOY_RPC_URL ||
-      "https://rpc-amoy.polygon.technology"
+    process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL ||
+      "https://sepolia.base.org"
   ),
 });
 
@@ -87,7 +87,7 @@ export const getWalletClient = async () => {
   if (!window.ethereum) throw new Error("MetaMask not found");
 
   return createWalletClient({
-    chain: polygonAmoy,
+    chain: baseSepolia,
     transport: custom(window.ethereum),
   });
 };
@@ -116,7 +116,7 @@ export const hashDealTerms = async (terms: {
 // Create a deal on-chain
 export const createDealOnChain = async (params: {
   sellerAddress: `0x${string}`;
-  amount: string; // in MATIC
+  amount: string; // in ETH (Base Sepolia uses ETH)
   termsHash: `0x${string}`;
   paymentDeadlineTimestamp: number;
   penaltyPercent: number;
@@ -152,9 +152,9 @@ export const getDealFromChain = async (dealId: bigint) => {
   });
 };
 
-// Get Polygonscan URL for a transaction
+// Get Base Sepolia explorer URL for a transaction
 export const getExplorerUrl = (txHash: string) =>
-  `https://amoy.polygonscan.com/tx/${txHash}`;
+  `https://sepolia.basescan.org/tx/${txHash}`;
 
 // Declare ethereum on window
 declare global {

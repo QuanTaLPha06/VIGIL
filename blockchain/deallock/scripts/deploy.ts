@@ -13,12 +13,13 @@ async function main() {
   console.log(`  Deployer: ${deployer.address}`);
 
   const balance = await ethers.provider.getBalance(deployer.address);
-  console.log(`  Balance:  ${ethers.formatEther(balance)} MATIC`);
+  console.log(`  Balance:  ${ethers.formatEther(balance)} ETH`);
   console.log("─────────────────────────────────────────");
 
-  if (networkName === "amoy" && balance === 0n) {
-    console.error("❌ Deployer wallet has 0 MATIC on Amoy. Get free testnet MATIC from:");
-    console.error("   https://faucet.polygon.technology/");
+  if (networkName === "baseSepolia" && balance === 0n) {
+    console.error("❌ Deployer wallet has 0 ETH on Base Sepolia. Get free testnet ETH from:");
+    console.error("   https://www.coinbase.com/faucets/base-ethereum-goerli-faucet");
+    console.error("   or: https://faucet.quicknode.com/base/sepolia");
     process.exit(1);
   }
 
@@ -34,8 +35,8 @@ async function main() {
   console.log(`   Address: ${address}`);
   console.log(`   Tx hash: ${deployTx?.hash || "N/A"}`);
 
-  if (networkName === "amoy") {
-    console.log(`   Explorer: https://amoy.polygonscan.com/address/${address}`);
+  if (networkName === "baseSepolia") {
+    console.log(`   Explorer: https://sepolia.basescan.org/address/${address}`);
   }
 
   // ── Save deployment info ────────────────────────────────────

@@ -36,7 +36,7 @@ export const MSMED_DELAY_THRESHOLD_DAYS = 45;
 export const DEFAULT_RBI_RATE = 6.5;
 
 export const NETWORK = {
-  POLYGON_AMOY: "polygon-amoy",
+  BASE_SEPOLIA: "base-sepolia",
   HARDHAT_LOCAL: "hardhat",
 } as const;
 

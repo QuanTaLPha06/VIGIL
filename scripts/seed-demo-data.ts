@@ -163,7 +163,7 @@ async function seed() {
     termsHash: "0xa3f8c2d1e4b7a9f0c5e2d8b1a4f7c0e3d6b9a2f5c8e1d4b7a0f3c6e9d2b5a8f1",
     blockchainTxHash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
     status: "LOCKED",
-    network: "polygon-amoy",
+    network: "base-sepolia",
     createdAt: hoursAgo(18),
   });
   console.log("✅ Deal seeded:", dealRef.id);

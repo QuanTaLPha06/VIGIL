@@ -22,10 +22,10 @@
 ## Step 2 — Create Protected Deal (~60s)
 
 1. Go to **DealLock**
-2. Fill in: seller address (any test wallet), 0.01 MATIC, 30-day deadline, 10% penalty
+2. Fill in: seller address (any test wallet), 0.01 ETH, 30-day deadline, 10% penalty
 3. Click **Create DealLock**
 4. Show: terms → hash → MetaMask popup → transaction confirmed
-5. Show the **Polygonscan link** — "This proof is permanent and tamper-evident"
+5. Show the **Basescan link** — "This proof is permanent and tamper-evident"
 6. Show risk: "DealLock activated → Risk -8"
 
 ---
