@@ -1,6 +1,6 @@
 /**
- * Gemini prompts for scam analysis.
- * Gemini supplements the rule engine — it does not replace it.
+ * Groq/LLM prompts for scam analysis.
+ * The AI supplements the rule engine — it does not replace it.
  */
 
 export function buildScamAnalysisPrompt(params: {

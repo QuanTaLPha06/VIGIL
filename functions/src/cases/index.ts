@@ -1,6 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { db, COLLECTIONS } from "../lib/firebase-admin";
-import { generateText } from "../lib/gemini";
+import { generateText } from "../lib/groq";
 
 // ── calculateInterest ─────────────────────────────────────────
 /**

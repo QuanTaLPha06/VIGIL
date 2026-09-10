@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { FieldValue } from "firebase-admin/firestore";
 import { db, COLLECTIONS } from "../lib/firebase-admin";
-import { generateText } from "../lib/gemini";
+import { generateText } from "../lib/groq";
 import { evaluateRules, scoreToRiskLevel } from "./rules";
 import { buildScamAnalysisPrompt } from "./prompts";
 import { addRiskEvent } from "../risk/index";
@@ -47,8 +47,8 @@ export const analyzeScam = onCall(async (request) => {
       aiConfidence = Math.max(0, Math.min(1, parsed.aiConfidence || 0.5));
     }
   } catch (err) {
-    // Gemini unavailable — rule engine result still valid
-    console.warn("[ScamChecker] Gemini unavailable, using rules only:", err);
+    // Groq unavailable — rule engine result still valid
+    console.warn("[ScamChecker] Groq unavailable, using rules only:", err);
     explanation = ruleScore > 0
       ? `Rule-based analysis detected ${ruleSignals.length} scam signal(s). Manual review recommended.`
       : "No scam signals detected by the rule engine.";
