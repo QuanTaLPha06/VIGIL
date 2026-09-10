@@ -1,0 +1,31 @@
+{
+  "name": "vigil-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter @vigil/web dev",
+    "build": "pnpm --recursive run build",
+    "build:web": "pnpm --filter @vigil/web build",
+    "build:functions": "pnpm --filter @vigil/functions build",
+    "deploy:functions": "firebase deploy --only functions",
+    "deploy:hosting": "firebase deploy --only hosting",
+    "deploy": "firebase deploy",
+    "emulate": "firebase emulators:start",
+    "seed": "ts-node scripts/seed-demo-data.ts",
+    "reset-demo": "ts-node scripts/reset-demo.ts",
+    "blockchain:compile": "pnpm --filter @vigil/deallock compile",
+    "blockchain:test": "pnpm --filter @vigil/deallock test",
+    "blockchain:deploy": "pnpm --filter @vigil/deallock deploy",
+    "lint": "pnpm --recursive run lint",
+    "typecheck": "pnpm --recursive run typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2",
+    "@types/node": "^20.11.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

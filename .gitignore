@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.local
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+firestore-debug.log
+ui-debug.log
+*-debug.log
+serviceAccount.json
+*.serviceAccount.json
+
+# Next.js
+apps/web/.next/
+apps/web/out/
+apps/web/.vercel/
+
+# TypeScript build output
+dist/
+build/
+*.tsbuildinfo
+
+# Hardhat / Blockchain
+blockchain/deallock/artifacts/
+blockchain/deallock/cache/
+blockchain/deallock/typechain-types/
+
+# Python (fraud-engine removed but keeping for safety)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Test coverage
+coverage/
+.nyc_output/

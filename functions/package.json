@@ -1,0 +1,29 @@
+{
+  "name": "@vigil/functions",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "lint": "eslint --ext .js,.ts .",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^12.2.0",
+    "firebase-functions": "^5.0.1",
+    "@google/generative-ai": "^0.15.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.3",
+    "@types/node": "^20.14.9",
+    "eslint": "^8.57.0",
+    "eslint-config-google": "^0.14.0",
+    "firebase-functions-test": "^3.3.0"
+  }
+}
