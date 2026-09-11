@@ -1,10 +1,10 @@
 /**
- * Firebase Cloud Functions callable client.
- * All calls to backend logic go through here.
+ * VIGIL API client — replaces Firebase callable functions.
+ * All calls go to Next.js API routes (/api/*).
+ * Auth token is automatically attached from Firebase Auth.
  */
 
-import { httpsCallable } from "firebase/functions";
-import { functions } from "./firebase";
+import { auth } from "./firebase";
 import type {
   ScamAnalysisRequest,
   ScamAnalysisResult,
@@ -17,53 +17,86 @@ import type {
   RiskRecalculateResult,
 } from "@vigil/types";
 
-// ── Scam Checker ─────────────────────────────────────────────
-export const analyzeScam = httpsCallable<ScamAnalysisRequest, ScamAnalysisResult>(
-  functions,
-  "analyzeScam"
-);
+// ── Base fetch helper ─────────────────────────────────────────
+async function apiCall<T>(endpoint: string, body: Record<string, unknown>): Promise<T> {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not authenticated");
 
-// ── Company Watchtower ───────────────────────────────────────
-export const verifyCompany = httpsCallable<VerificationRequest, VerificationResult>(
-  functions,
-  "verifyCompany"
-);
+  const token = await user.getIdToken();
 
-// ── Payment Risk ─────────────────────────────────────────────
-export const assessPaymentRisk = httpsCallable<PaymentRiskRequest, PaymentRiskResult>(
-  functions,
-  "assessPaymentRisk"
-);
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
 
-// ── Risk Engine ──────────────────────────────────────────────
-export const recalculateRisk = httpsCallable<{ companyId: string }, RiskRecalculateResult>(
-  functions,
-  "recalculateRisk"
-);
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ error: "Request failed" }));
+    throw new Error(error.error || `HTTP ${res.status}`);
+  }
 
-export const simulateRiskEvent = httpsCallable<
-  { companyId: string; eventType: string },
-  { newRisk: number; delta: number }
->(functions, "simulateRiskEvent");
+  return res.json();
+}
 
-// ── VIGIL Invest ─────────────────────────────────────────────
-export const calculateAllocation = httpsCallable<
-  InvestmentAllocationRequest,
-  InvestmentAllocationResult
->(functions, "calculateAllocation");
+async function apiGet<T>(endpoint: string): Promise<T> {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not authenticated");
 
-export const checkInvestmentScheme = httpsCallable<
-  { schemeName: string; organizationName: string },
-  VerificationResult
->(functions, "checkInvestmentScheme");
+  const token = await user.getIdToken();
+
+  const res = await fetch(endpoint, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ error: "Request failed" }));
+    throw new Error(error.error || `HTTP ${res.status}`);
+  }
+
+  return res.json();
+}
+
+// ── Scam Checker ──────────────────────────────────────────────
+export const analyzeScam = (data: ScamAnalysisRequest) =>
+  Promise.resolve({ data: apiCall<ScamAnalysisResult>("/api/scam", data as unknown as Record<string, unknown>) }).then(
+    async (p) => ({ data: await p.data })
+  );
+
+// ── Company Watchtower ────────────────────────────────────────
+export const verifyCompany = (data: VerificationRequest) =>
+  apiCall<VerificationResult>("/api/watchtower", data as unknown as Record<string, unknown>).then((data) => ({ data }));
+
+export const checkInvestmentScheme = (data: { schemeName: string; organizationName: string }) =>
+  apiCall<VerificationResult>("/api/watchtower", { ...data, action: "scheme" }).then((data) => ({ data }));
+
+// ── Payment Risk ──────────────────────────────────────────────
+export const assessPaymentRisk = (data: PaymentRiskRequest) =>
+  apiCall<PaymentRiskResult>("/api/payments", data as unknown as Record<string, unknown>).then((data) => ({ data }));
+
+// ── Risk Engine ───────────────────────────────────────────────
+export const recalculateRisk = (data: { companyId: string }) =>
+  apiCall<RiskRecalculateResult>("/api/risk", { ...data, action: "recalculate" }).then((data) => ({ data }));
+
+export const simulateRiskEvent = (data: { companyId: string; eventType: string }) =>
+  apiCall<{ newRisk: number; delta: number }>("/api/risk", { ...data, action: "simulate" }).then((data) => ({ data }));
+
+export const getRiskTrend = () =>
+  apiGet<{ points: unknown[] }>("/api/risk?action=trend").then((data) => ({ data }));
+
+// ── VIGIL Invest ──────────────────────────────────────────────
+export const calculateAllocation = (data: InvestmentAllocationRequest) =>
+  apiCall<InvestmentAllocationResult>("/api/invest", data as unknown as Record<string, unknown>).then((data) => ({ data }));
 
 // ── Cases ─────────────────────────────────────────────────────
-export const generateSamadhaanDraft = httpsCallable<
-  { caseId: string },
-  { draft: string; fileName: string }
->(functions, "generateSamadhaanDraft");
+export const generateSamadhaanDraft = (data: { caseId: string }) =>
+  apiCall<{ draft: string; fileName: string }>("/api/cases", { ...data, action: "samadhaan" }).then((data) => ({ data }));
 
-export const calculateInterest = httpsCallable<
-  { principal: number; daysOverdue: number; rbiRate: number },
-  { interest: number; totalClaim: number; breakdown: string }
->(functions, "calculateInterest");
+export const calculateInterest = (data: { principal: number; daysOverdue: number; rbiRate: number }) =>
+  apiCall<{ interest: number; totalClaim: number; breakdown: string }>("/api/cases", { ...data, action: "interest" }).then((data) => ({ data }));
+
+// ── DealLock sync ─────────────────────────────────────────────
+export const syncDealLockEvent = (data: { dealId: string; eventType: string; txHash?: string }) =>
+  apiCall<{ success: boolean; status: string }>("/api/deallock", data).then((data) => ({ data }));
