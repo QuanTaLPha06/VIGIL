@@ -1,10 +1,19 @@
 /**
  * DealLock blockchain integration.
- * Uses viem to interact with the DealLock contract on Base Sepolia testnet.
+ * Uses viem to interact with the DealLock contract on Polygon Amoy testnet.
  */
 
-import { createWalletClient, createPublicClient, custom, http, parseEther } from "viem";
-import { baseSepolia } from "viem/chains";
+import {
+  createWalletClient,
+  createPublicClient,
+  custom,
+  http,
+  parseEther,
+  type PublicClient,
+  type Transport,
+  type WalletClient,
+} from "viem";
+import { polygonAmoy } from "viem/chains";
 
 // ABI — generated after `pnpm blockchain:compile`
 // Import from blockchain package once compiled:
@@ -61,34 +70,72 @@ export const DEALLOCK_CONTRACT_ADDRESS =
   "0x0000000000000000000000000000000000000000";
 
 // Public client for read operations (no wallet needed)
-export const publicClient = createPublicClient({
-  chain: baseSepolia,
+export const publicClient: PublicClient = createPublicClient({
+  chain: polygonAmoy,
   transport: http(
-    process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL ||
-      "https://sepolia.base.org"
+    process.env.NEXT_PUBLIC_POLYGON_AMOY_RPC_URL ||
+      "https://rpc-amoy.polygon.technology"
   ),
 });
 
-// Connect MetaMask wallet
-export const connectWallet = async (): Promise<`0x${string}`> => {
-  if (typeof window === "undefined" || !window.ethereum) {
-    throw new Error("MetaMask is not installed. Please install MetaMask to use DealLock.");
-  }
+const AMOY_CHAIN_ID = `0x${polygonAmoy.id.toString(16)}`;
 
-  const accounts = await window.ethereum.request({
+const getInjectedProvider = (): InjectedProvider => {
+  if (typeof window === "undefined" || !window.ethereum) {
+    throw new Error(
+      "No compatible wallet found. Install Coinbase Wallet, Rabby, Brave Wallet, or another EIP-1193 wallet."
+    );
+  }
+  return window.ethereum;
+};
+
+const ensurePolygonAmoy = async (provider: InjectedProvider) => {
+  const chainId = await provider.request({ method: "eth_chainId" });
+  if (String(chainId).toLowerCase() === AMOY_CHAIN_ID) return;
+
+  try {
+    await provider.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: AMOY_CHAIN_ID }],
+    });
+  } catch (error) {
+    if ((error as { code?: number }).code !== 4902) throw error;
+    await provider.request({
+      method: "wallet_addEthereumChain",
+      params: [{
+        chainId: AMOY_CHAIN_ID,
+        chainName: "Polygon Amoy",
+        nativeCurrency: { name: "POL", symbol: "POL", decimals: 18 },
+        rpcUrls: ["https://rpc-amoy.polygon.technology"],
+        blockExplorerUrls: ["https://amoy.polygonscan.com"],
+      }],
+    });
+  }
+};
+
+// Connect any browser wallet that implements the EIP-1193 provider interface.
+export const connectWallet = async (): Promise<`0x${string}`> => {
+  const provider = getInjectedProvider();
+  await ensurePolygonAmoy(provider);
+  const accounts = await provider.request({
     method: "eth_requestAccounts",
   });
 
-  return accounts[0] as `0x${string}`;
+  const address = (accounts as string[])[0];
+  if (!address) throw new Error("The wallet did not return an account.");
+  return address as `0x${string}`;
 };
 
-// Get wallet client (requires MetaMask)
-export const getWalletClient = async () => {
-  if (!window.ethereum) throw new Error("MetaMask not found");
+// Get a wallet client from any injected EIP-1193 wallet.
+type DealLockWalletClient = WalletClient<Transport, typeof polygonAmoy>;
+
+export const getWalletClient = async (): Promise<DealLockWalletClient> => {
+  const provider = getInjectedProvider();
+  await ensurePolygonAmoy(provider);
 
   return createWalletClient({
-    chain: baseSepolia,
-    transport: custom(window.ethereum),
+    chain: polygonAmoy,
+    transport: custom(provider),
   });
 };
 
@@ -116,7 +163,7 @@ export const hashDealTerms = async (terms: {
 // Create a deal on-chain
 export const createDealOnChain = async (params: {
   sellerAddress: `0x${string}`;
-  amount: string; // in ETH (Base Sepolia uses ETH)
+  amount: string; // in POL (Polygon Amoy)
   termsHash: `0x${string}`;
   paymentDeadlineTimestamp: number;
   penaltyPercent: number;
@@ -152,15 +199,16 @@ export const getDealFromChain = async (dealId: bigint) => {
   });
 };
 
-// Get Base Sepolia explorer URL for a transaction
+// Get Polygon Amoy explorer URL for a transaction
 export const getExplorerUrl = (txHash: string) =>
-  `https://sepolia.basescan.org/tx/${txHash}`;
+  `https://amoy.polygonscan.com/tx/${txHash}`;
 
-// Declare ethereum on window
+type InjectedProvider = {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+};
+
 declare global {
   interface Window {
-    ethereum?: {
-      request: (args: { method: string; params?: unknown[] }) => Promise<unknown[]>;
-    };
+    ethereum?: InjectedProvider;
   }
 }

@@ -2,3 +2,8 @@ packages:
   - 'apps/*'
   - 'blockchain/*'
   - 'packages/*'
+allowBuilds:
+  keccak: true
+  protobufjs: false
+  secp256k1: false
+  unrs-resolver: false

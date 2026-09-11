@@ -3,90 +3,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Helper functions ──────────────────────────────────────
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
-    // ── Users ─────────────────────────────────────────────────
-    match /users/{userId} {
-      allow read, write: if isSignedIn() && isOwner(userId);
-    }
-
-    // ── Risk Profiles ─────────────────────────────────────────
-    // Only the owning user and Cloud Functions can read/write
-    match /riskProfiles/{companyId} {
-      allow read: if isSignedIn() && isOwner(companyId);
-      // Write only via Cloud Functions (using Admin SDK)
-      allow write: if false;
-    }
-
-    // ── Risk Events ───────────────────────────────────────────
-    match /riskEvents/{eventId} {
-      allow read: if isSignedIn() &&
-        resource.data.companyId == request.auth.uid;
-      allow write: if false; // Cloud Functions only
-    }
-
-    // ── Verification Checks ───────────────────────────────────
-    match /verificationChecks/{checkId} {
-      allow read: if isSignedIn() &&
-        resource.data.requestedBy == request.auth.uid;
-      allow write: if false;
-    }
-
-    // ── Scam Reports ──────────────────────────────────────────
-    match /scamReports/{reportId} {
-      allow read: if isSignedIn() &&
-        resource.data.userId == request.auth.uid;
-      allow write: if false;
-    }
-
-    // ── Payments ──────────────────────────────────────────────
-    match /payments/{paymentId} {
-      allow read: if isSignedIn() &&
-        resource.data.userId == request.auth.uid;
-      allow write: if false;
-    }
-
-    // ── Deals ─────────────────────────────────────────────────
-    match /deals/{dealId} {
-      allow read: if isSignedIn() && (
-        resource.data.buyerId == request.auth.uid ||
-        resource.data.sellerId == request.auth.uid
-      );
-      // Initial deal creation allowed from client (DealLock create flow)
-      allow create: if isSignedIn() &&
-        request.resource.data.buyerId == request.auth.uid;
-      // Updates only via Cloud Functions
-      allow update, delete: if false;
-    }
-
-    // ── Cases ─────────────────────────────────────────────────
-    match /cases/{caseId} {
-      allow read: if isSignedIn() &&
-        resource.data.companyId == request.auth.uid;
-      // Users can create cases directly
-      allow create: if isSignedIn() &&
-        request.resource.data.companyId == request.auth.uid;
-      allow update: if isSignedIn() &&
-        resource.data.companyId == request.auth.uid;
-      allow delete: if false;
-    }
-
-    // ── Investment Profiles ───────────────────────────────────
-    match /investmentProfiles/{userId} {
-      allow read: if isSignedIn() && isOwner(userId);
-      allow write: if false;
-    }
-
-    // ── Block all other documents ─────────────────────────────
+    // ── Development rules ─────────────────────────────────────
+    // Any authenticated user can read/write their own data.
+    // TODO: tighten these rules before production deployment.
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if request.auth != null;
     }
   }
 }
