@@ -1,13 +1,14 @@
-import { Metadata } from "next";
+"use client";
+
+import { useState } from "react";
 import { InvestForm } from "@/components/invest/invest-form";
 import { AllocationResult } from "@/components/invest/allocation-result";
 import { SchemeChecker } from "@/components/invest/scheme-checker";
-
-export const metadata: Metadata = {
-  title: "VIGIL Invest — VIGIL",
-};
+import type { InvestmentAllocationResult } from "@vigil/types";
 
 export default function InvestPage() {
+  const [result, setResult] = useState<InvestmentAllocationResult | null>(null);
+
   return (
     <div className="space-y-6">
       <div>
@@ -24,8 +25,9 @@ export default function InvestPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <InvestForm />
-        <AllocationResult />
+        {/* onResult wires the form result into AllocationResult */}
+        <InvestForm onResult={setResult} />
+        <AllocationResult result={result} />
       </div>
 
       <SchemeChecker />
