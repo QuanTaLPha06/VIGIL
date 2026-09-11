@@ -1,6 +1,6 @@
 {
   "buildCommand": "pnpm --filter @vigil/web build",
   "outputDirectory": "apps/web/.next",
-  "installCommand": "npm install -g pnpm@9 && pnpm install",
+  "installCommand": "corepack enable && corepack prepare pnpm@9.0.0 --activate && pnpm install",
   "framework": "nextjs"
 }
