@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Settings,
   LogOut,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/lib/auth";
@@ -60,6 +61,12 @@ const navItems = [
     label: "VIGIL Invest",
     icon: TrendingUp,
     description: "Capital allocation guidance",
+  },
+  {
+    href: "/learn",
+    label: "Learn & Respond",
+    icon: BookOpen,
+    description: "Cases, guides & action steps",
   },
 ];
 
