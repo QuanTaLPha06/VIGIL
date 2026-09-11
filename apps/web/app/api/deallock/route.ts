@@ -51,7 +51,8 @@ export async function POST(req: NextRequest) {
   // Update risk profile
   const riskEvent = RISK_EVENT_MAP[eventType];
   if (riskEvent) {
-    const companyId = uid || deal.buyerId;
+    // Always use the deal's buyer as the canonical company for risk updates
+    const companyId = deal.buyerId || uid;
     const delta = getEventDelta(riskEvent);
     const severity = Math.abs(delta) >= 15 ? "HIGH" : Math.abs(delta) >= 10 ? "MEDIUM" : "LOW";
     const profileSnap = await adminDb.collection(COLLECTIONS.RISK_PROFILES).doc(companyId).get();

@@ -61,9 +61,7 @@ async function apiGet<T>(endpoint: string): Promise<T> {
 
 // ── Scam Checker ──────────────────────────────────────────────
 export const analyzeScam = (data: ScamAnalysisRequest) =>
-  Promise.resolve({ data: apiCall<ScamAnalysisResult>("/api/scam", data as unknown as Record<string, unknown>) }).then(
-    async (p) => ({ data: await p.data })
-  );
+  apiCall<ScamAnalysisResult>("/api/scam", data as unknown as Record<string, unknown>).then((data) => ({ data }));
 
 // ── Company Watchtower ────────────────────────────────────────
 export const verifyCompany = (data: VerificationRequest) =>

@@ -7,6 +7,7 @@ import { NextRequest } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb, verifyAuthToken, ok, err, COLLECTIONS } from "@/lib/firebase-admin";
 import { generateText } from "@/lib/groq-server";
+import { applyEvent, getEventReason, INITIAL_RISK_PROFILE } from "@/lib/risk-calculator";
 
 // ── Rule engine ───────────────────────────────────────────────
 const RULES: Array<{ patterns: RegExp[]; signal: string; weight: number }> = [
@@ -151,7 +152,6 @@ ${text}
     const eventType = riskLevel === "CRITICAL" || riskLevel === "HIGH" ? "SCAM_DETECTED" : "SUSPICIOUS_MESSAGE";
     const delta = eventType === "SCAM_DETECTED" ? 18 : 15;
     const severity = delta >= 15 ? "HIGH" : "MEDIUM";
-    const { getEventReason, applyEvent, INITIAL_RISK_PROFILE } = await import("@/lib/risk-calculator");
     const profileSnap = await adminDb.collection(COLLECTIONS.RISK_PROFILES).doc(effectiveCompanyId).get();
     const current = profileSnap.exists ? profileSnap.data() : { ...INITIAL_RISK_PROFILE };
 

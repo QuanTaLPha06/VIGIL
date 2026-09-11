@@ -6,7 +6,7 @@
 import { NextRequest } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb, verifyAuthToken, ok, err, COLLECTIONS } from "@/lib/firebase-admin";
-import { applyEvent, INITIAL_RISK_PROFILE } from "@/lib/risk-calculator";
+import { applyEvent, getEventDelta, getEventReason, INITIAL_RISK_PROFILE } from "@/lib/risk-calculator";
 
 // ── Mock company data (prototype) ─────────────────────────────
 const MOCK_COMPANIES = [
@@ -124,7 +124,6 @@ export async function POST(req: NextRequest) {
   const eventType = overallStatus === "FAILED" || communityReports >= 3 ? "UNVERIFIED_COUNTERPARTY" : overallStatus === "VERIFIED" && communityReports === 0 ? "COUNTERPARTY_FULLY_VERIFIED" : null;
 
   if (eventType) {
-    const { getEventDelta, getEventReason } = await import("@/lib/risk-calculator");
     const delta = getEventDelta(eventType);
     await Promise.all([
       adminDb.collection(COLLECTIONS.RISK_EVENTS).add({ companyId: uid, eventType, severity: Math.abs(delta) >= 10 ? "MEDIUM" : "LOW", source: "watchtower", scoreDelta: delta, evidence: [getEventReason(eventType)], createdAt: FieldValue.serverTimestamp() }),

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, ExternalLink, Loader2, CheckCircle } from "lucide-react";
+import { Lock, ExternalLink, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 import {
   connectWallet,
   createDealOnChain,
@@ -29,6 +29,7 @@ type Step = "FORM" | "CONNECTING" | "HASHING" | "SIGNING" | "CONFIRMED";
 
 export function DealLockCreateForm() {
   const { user } = useAuth();
+  const [hasWallet, setHasWallet] = useState<boolean | null>(null);
   const [form, setForm] = useState<DealForm>({
     sellerName: "",
     sellerAddress: "",
@@ -41,6 +42,11 @@ export function DealLockCreateForm() {
   const [txHash, setTxHash] = useState("");
   const [termsHash, setTermsHash] = useState("");
   const [error, setError] = useState("");
+
+  // Pre-flight: detect wallet on mount
+  useEffect(() => {
+    setHasWallet(typeof window !== "undefined" && !!window.ethereum);
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +64,7 @@ export function DealLockCreateForm() {
         buyerName: user?.displayName || "Unknown",
         sellerName: form.sellerName,
         amount: parseFloat(form.amount),
-        currency: "MATIC",
+        currency: "POL",
         deliveryDate: form.paymentDeadline,
         paymentDeadline: form.paymentDeadline,
         penaltyPercent: parseFloat(form.penaltyPercent),
@@ -109,7 +115,7 @@ export function DealLockCreateForm() {
           <div>
             <h3 className="font-bold text-lg">DealLock Created</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Your deal is protected on Polygon Amoy
+              Your deal is protected on Base Sepolia
             </p>
           </div>
           <div className="bg-muted rounded-lg p-4 text-left space-y-2 text-sm">
@@ -128,7 +134,7 @@ export function DealLockCreateForm() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
           >
-            View on Polygonscan <ExternalLink className="h-3 w-3" />
+            View on Basescan <ExternalLink className="h-3 w-3" />
           </a>
           <Button variant="outline" className="w-full" onClick={() => setStep("FORM")}>
             Create another deal
@@ -152,6 +158,20 @@ export function DealLockCreateForm() {
         {error && (
           <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md mb-4">
             {error}
+          </div>
+        )}
+
+        {/* Wallet pre-flight warning */}
+        {hasWallet === false && (
+          <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-800 text-sm p-3 rounded-lg mb-2">
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium">No wallet detected</p>
+              <p className="text-xs mt-0.5">
+                DealLock requires a browser wallet (MetaMask, Coinbase Wallet, Rabby, etc.).
+                Install one and refresh the page to use this feature.
+              </p>
+            </div>
           </div>
         )}
 
@@ -194,7 +214,7 @@ export function DealLockCreateForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Deal amount (MATIC)</Label>
+              <Label>Deal amount (POL)</Label>
               <Input
                 type="number"
                 placeholder="0.01"
@@ -205,7 +225,7 @@ export function DealLockCreateForm() {
                 step="0.001"
               />
               <p className="text-xs text-muted-foreground">
-                Testnet only — use free Amoy MATIC
+                Testnet only — use free Amoy POL
               </p>
             </div>
             <div className="space-y-2">
@@ -240,9 +260,9 @@ export function DealLockCreateForm() {
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={hasWallet === false}>
               <Lock className="h-4 w-4 mr-2" />
-              Create DealLock
+              {hasWallet === false ? "Wallet required" : "Create DealLock"}
             </Button>
           </form>
         )}
