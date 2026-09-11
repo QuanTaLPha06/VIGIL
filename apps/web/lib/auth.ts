@@ -3,13 +3,13 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  User,
   GoogleAuthProvider,
   signInWithPopup,
+  type User,
 } from "firebase/auth";
 import { auth } from "./firebase";
 
-export { User };
+export type { User };
 
 export const loginWithEmail = (email: string, password: string) =>
   signInWithEmailAndPassword(auth, email, password);
